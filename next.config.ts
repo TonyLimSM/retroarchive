@@ -8,8 +8,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "upload.wikimedia.org" },
       { protocol: "https", hostname: "media.sega-database.com" },
-      // Local Supabase Storage for user-uploaded photos.
+      { protocol: "https", hostname: "images.igdb.com" },
+      // Local Supabase Storage for user-uploaded photos (dev only).
       { protocol: "http", hostname: "127.0.0.1", port: "54321" },
+      // Cloud Supabase Storage for production.
+      { protocol: "https", hostname: "dbppiemacfdktuhsrybh.supabase.co" },
     ],
   },
 };

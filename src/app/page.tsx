@@ -5,6 +5,7 @@ import type { Console } from "@/lib/supabase/database.types";
 import { ConsoleBadge } from "@/components/ConsoleBadge";
 import { getCurrentUser } from "@/lib/supabase/auth";
 import { RefreshAllButton } from "@/app/_refresh-all/RefreshAllButton";
+import { BackfillCoversButton } from "@/app/_backfill-covers/BackfillCoversButton";
 
 export default async function DashboardPage() {
   if (!isDemoMode) {
@@ -103,11 +104,12 @@ export default async function DashboardPage() {
       </section>
 
       {!isDemoMode && (
-        <section className="rounded-lg border border-stone-200 bg-white p-5">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">
+        <section className="rounded-lg border border-stone-200 bg-white p-5 space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
             Maintenance
           </h2>
           <RefreshAllButton />
+          <BackfillCoversButton />
         </section>
       )}
 
