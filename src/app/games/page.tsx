@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { isDemoMode, listGames } from "@/lib/data/games";
 import { getCurrentUser } from "@/lib/supabase/auth";
-import { GamesTable } from "./GamesTable";
+import { GamesView } from "./GamesView";
 
 export default async function GamesPage() {
   if (!isDemoMode) {
@@ -24,7 +24,7 @@ export default async function GamesPage() {
           <Link href="/import" className="underline">importing a CSV</Link>.
         </p>
       ) : (
-        <GamesTable games={games} />
+        <GamesView games={games} />
       )}
     </div>
   );
