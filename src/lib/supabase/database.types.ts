@@ -38,6 +38,21 @@ export type RetroGameInsert = Omit<
 
 export type RetroGameUpdate = Partial<RetroGameInsert>;
 
+export type PriceHistory = {
+  id: string;
+  game_id: string;
+  owner_id: string;
+  price: number;
+  condition: Condition;
+  source: string;
+  recorded_at: string;
+};
+
+export type PriceHistoryInsert = Omit<PriceHistory, "id" | "recorded_at"> & {
+  id?: string;
+  recorded_at?: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -45,6 +60,12 @@ export type Database = {
         Row: RetroGame;
         Insert: RetroGameInsert;
         Update: RetroGameUpdate;
+        Relationships: [];
+      };
+      price_history: {
+        Row: PriceHistory;
+        Insert: PriceHistoryInsert;
+        Update: Partial<PriceHistoryInsert>;
         Relationships: [];
       };
     };

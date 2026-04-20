@@ -2,7 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConsoleBadge } from "@/components/ConsoleBadge";
-import { getGame, isDemoMode } from "@/lib/data/games";
+import { Sparkline } from "@/components/Sparkline";
+import { getGame, getPriceHistory, isDemoMode } from "@/lib/data/games";
 import { formatPercent, formatUSD, profitPercent } from "@/lib/format";
 import { PhotoUploader } from "./photos/PhotoUploader";
 import { RefreshPriceButton } from "./refresh-price/RefreshPriceButton";
@@ -16,6 +17,8 @@ export default async function GameDetailPage({
   const { id } = await params;
   const game = await getGame(id);
   if (!game) notFound();
+
+  const history = isDemoMode ? [] : await getPriceHistory(id);
 
   const profit = game.current_market_price - game.purchase_price;
   const pct = profitPercent(game.current_market_price, game.purchase_price);
@@ -44,8 +47,44 @@ export default async function GameDetailPage({
           <div className="font-mono text-2xl font-semibold">
             {formatUSD(game.current_market_price)}
           </div>
+          {history.length >= 2 && (
+            <div className="mt-1 flex justify-end">
+              <Sparkline
+                points={history.map((h) => ({ price: h.price, recorded_at: h.recorded_at }))}
+                width={140}
+                height={40}
+              />
+            </div>
+          )}
         </div>
       </header>
+
+      {history.length >= 2 && (
+        <section className="rounded-lg border border-stone-200 bg-white p-5">
+          <div className="mb-3 flex items-baseline justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
+              Price history
+            </h2>
+            <span className="text-xs text-stone-500">
+              {history.length} snapshot{history.length === 1 ? "" : "s"} · since{" "}
+              {new Date(history[0].recorded_at).toLocaleDateString()}
+            </span>
+          </div>
+          <Sparkline
+            points={history.map((h) => ({ price: h.price, recorded_at: h.recorded_at }))}
+            width={720}
+            height={120}
+            strokeWidth={2}
+          />
+        </section>
+      )}
+
+      {history.length < 2 && !isDemoMode && (
+        <p className="text-xs text-stone-500">
+          Refresh this game&apos;s price a few times (dashboard or detail page) to
+          build up price history. Sparkline appears after 2+ snapshots.
+        </p>
+      )}
 
       <section className="grid gap-6 md:grid-cols-3">
         <div className="md:col-span-2 space-y-4">

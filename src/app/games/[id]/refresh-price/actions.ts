@@ -50,14 +50,25 @@ export async function refreshPrice(gameId: string): Promise<RefreshResult> {
     };
   }
 
-  const { error: updateError } = await supabase
-    .from("retro_games")
-    .update({
-      current_market_price: picked,
-      price_updated_at: new Date().toISOString(),
-    })
-    .eq("id", gameId);
-  if (updateError) return { ok: false, reason: updateError.message };
+  const now = new Date().toISOString();
+
+  // Run update + history insert in parallel — both are independent writes.
+  // If the history insert fails we don't want to block the price update.
+  const [updateResult] = await Promise.all([
+    supabase
+      .from("retro_games")
+      .update({ current_market_price: picked, price_updated_at: now })
+      .eq("id", gameId),
+    supabase.from("price_history").insert({
+      game_id: gameId,
+      owner_id: user.id,
+      price: picked,
+      condition: game.condition,
+      source: "pricecharting",
+      recorded_at: now,
+    }),
+  ]);
+  if (updateResult.error) return { ok: false, reason: updateResult.error.message };
 
   revalidatePath(`/games/${gameId}`);
   revalidatePath("/games");

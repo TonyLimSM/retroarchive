@@ -1,4 +1,4 @@
-import type { RetroGame } from "../supabase/database.types";
+import type { PriceHistory, RetroGame } from "../supabase/database.types";
 import { MOCK_GAMES } from "./mock-games";
 
 const useMock = !process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -33,4 +33,21 @@ export async function getGame(id: string): Promise<RetroGame | null> {
     .maybeSingle();
   if (error) throw new Error(error.message);
   return data;
+}
+
+export async function getPriceHistory(
+  gameId: string,
+  limit = 100,
+): Promise<PriceHistory[]> {
+  if (useMock) return [];
+  const { createClient } = await import("../supabase/server");
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("price_history")
+    .select("*")
+    .eq("game_id", gameId)
+    .order("recorded_at", { ascending: true })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return data ?? [];
 }

@@ -89,15 +89,23 @@ export async function refreshAllStalePrices(): Promise<BulkRefreshResult> {
         continue;
       }
 
-      const { error: updateError } = await supabase
-        .from("retro_games")
-        .update({
-          current_market_price: picked,
-          price_updated_at: new Date().toISOString(),
-        })
-        .eq("id", g.id);
-      if (updateError) {
-        result.errors.push({ title: g.title, reason: updateError.message });
+      const now = new Date().toISOString();
+      const [updateResult] = await Promise.all([
+        supabase
+          .from("retro_games")
+          .update({ current_market_price: picked, price_updated_at: now })
+          .eq("id", g.id),
+        supabase.from("price_history").insert({
+          game_id: g.id,
+          owner_id: user.id,
+          price: picked,
+          condition: g.condition,
+          source: "pricecharting",
+          recorded_at: now,
+        }),
+      ]);
+      if (updateResult.error) {
+        result.errors.push({ title: g.title, reason: updateResult.error.message });
         continue;
       }
       result.succeeded += 1;
